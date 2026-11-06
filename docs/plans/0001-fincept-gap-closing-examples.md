@@ -1,6 +1,14 @@
 # 0001 — Example Notebooks for Fincept-Gap-Closing Features (Deferred)
 
-> **Status**: Proposed — not yet implemented.
+> **Status**: **Implemented** (Layer 6 of `docs/future-work-bottoms-up-build-order.md`).
+> One runnable example per shipped gap-closing engine, in
+> `vyapaar-examples/examples/`: **12** `portfolio_allocation` →
+> `vyapaar-ledger-allocation`; **13** `black_scholes_greeks` →
+> `vyapaar-market-pricing`; **14** `timeseries_forecast` →
+> `vyapaar-agent-forecast` (Theta); **15** `fama_macbeth_factor_regression` →
+> `vyapaar-agent-panel`. Regression tests in `tests/unit/test_1[2-5]_*.py`;
+> shared exact-`Decimal` stats/linear-algebra helpers in
+> `vyapaar_examples/quant.py`.
 > **Target Crates**: `vyapaar-examples` (Python reference scripts/tutorials)
 > **Depends on reading**:
 > - (none external)
@@ -27,5 +35,9 @@ No component work is proposed now. The only forward-looking action item: once an
 
 ## 3. Implementation Phases
 
-### Phase 1 (deferred, not started)
-Revisit this doc once a first new engine from the wider initiative actually ships, and add its example then — do not pre-build examples for unshipped features.
+### Phase 1 (implemented)
+One runnable example per shipped engine from the wider initiative landed in
+`examples/12`–`15` (allocation, pricing, forecast, Fama-MacBeth), each with a
+regression test in `tests/unit/` and shared exact-`Decimal` helpers in
+`vyapaar_examples/quant.py`. Future engines that ship later get the same
+treatment — an example is added only once the engine exists.

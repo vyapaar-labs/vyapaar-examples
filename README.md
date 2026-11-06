@@ -7,6 +7,13 @@ ecosystem: numbered, deterministic, offline-runnable scripts covering Indian
 equities, NSE/NFO options microstructure, factor models, walk-forward
 optimization (WFO), and the autonomous AI research loop.
 
+Examples **12–15** are the Fincept/Quantcept gap-closing set: one runnable
+script per engine shipped in that initiative — `vyapaar-ledger-allocation`
+(mean-variance & risk parity), `vyapaar-market-pricing` (Black-Scholes, Greeks,
+implied volatility), `vyapaar-agent-forecast` (Theta), and `vyapaar-agent-panel`
+(Fama-MacBeth). Each mirrors its Rust engine's public semantics in exact
+`Decimal` so it stays deterministic and offline.
+
 ## Invariants
 
 - **Offline & Deterministic by Default** — every example runs out of the box

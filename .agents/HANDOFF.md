@@ -1,19 +1,19 @@
 # `vyapaar-examples` — Inter-Agent Handoff
 
 ## Phase / Slice Status
-* **Tier 6D (COMPLETE)**: Implemented the Reference Learning Path from the
+* **Tier 6D (COMPLETE)**: Reference Learning Path implemented from the
   sub-guide contracts (source `honba-examples` unavailable; implemented fresh).
-* Package `vyapaar_examples/`: `data` (integer-paise deterministic synthetic
-  bars + `trending_bars` + `SampleInstruments`), `sdk` (SMA/RSI/cross),
-  `metrics` (`PerformanceMetrics`/`compute_metrics`, all-Decimal), `backtest`
-  (bar-by-bar, cost-consistent round-trip PnL), `walkforward` (rolling
-  train/validate windows), `fake_llm` (`ScriptedFakeLlm`).
-* `examples/`: 11 numbered scripts (01 loading, 02 indicators, 03 order
-  lifecycle, 04 bracket orders, 05 partial fills, 06 multi-symbol portfolio,
-  07 turtle backtest, 08 NFO options microstructure, 09 Alpha30 factor model,
-  10 walk-forward optimization, 11 autoresearch loop). Every script has a
-  `Pitfalls::` docstring and a `main() -> dict` result contract.
-* `tests/unit/`: one regression test per example plus `test_helpers.py`.
+* **Fincept/Quantcept Layer 6 (COMPLETE)**: `docs/plans/0001` implemented —
+  examples `12_portfolio_allocation` (`vyapaar-ledger-allocation` mirror:
+  mean-variance tangency, damped risk parity, clip-and-renormalize bounds),
+  `13_black_scholes_greeks` (`vyapaar-market-pricing` mirror: BS price, five
+  Greeks, IV bisection; documented `f64`-internal/`Decimal`-boundary
+  exception), `14_timeseries_forecast` (`vyapaar-agent-forecast` Theta mirror),
+  `15_fama_macbeth_factor_regression` (`vyapaar-agent-panel` mirror). Shared
+  exact-`Decimal` stats/linear-algebra in `vyapaar_examples/quant.py`
+  (`returns`, `mean`, `std_dev`, `covariance_matrix`, `solve_linear_system`,
+  `ols`). Gate: 21 tests, `ruff check`, `ruff format --check`, and
+  `mypy vyapaar_examples` all PASS.
 
 ## Decisions & Discoveries
 * pyproject: removed `rust_decimal`; declared `vyapaar`, `vyapaar-strategies`,
@@ -22,15 +22,20 @@
   tests load them via `importlib.util.spec_from_file_location`.
 * Zero floats start at the source: synthetic walks step in integer paise and
   materialize `Decimal`; ruff RUF032 forbids `Decimal(<float literal>)`.
-* mypy `exclude` patterns are substring-matching: `"examples"` excluded
-  `vyapaar_examples`; removed the pattern (CI type-checks the package only).
-* Backtest cost model: round-trip PnL = `(exit-entry)*qty - 2*cost*qty`,
-  consistent with the cash ledger (cost charged on every delta trade).
+* RUF002 is live (ambiguous-unicode lint): docstrings keep Greek/Unicode
+  math out except where the existing examples already use them; new example
+  docstrings prefer ASCII math.
+* mypy `exclude` patterns are substring-matching: CI type-checks only
+  `vyapaar_examples`; example/tests modules are not mypy-clean by design.
+* Black-Scholes (example 13) mirrors the pricing crate's documented exception:
+  `math` floats internally, `Decimal` rounded to 8dp at the boundary.
+* Examples run standalone with the package installed (or `PYTHONPATH=.`);
+  pytest resolves `vyapaar_examples` via the rootdir `conftest.py`.
 
 ## Immediate Next Step
-* Tier 6E: `vyapaar-docs` — add CI workflow (`mkdocs build --strict`), then
-  update the root superproject (submodule pointers + migration guide).
+* None in this repo. Add a runnable example for any *future* shipped engine
+  per `docs/plans/0001` (its Phase 1 now says exactly that).
 
 ## Operating Invariants
-* Zero floats in financial math; examples deterministic and offline; tests
-  live in `tests/` only.
+* Zero floats in financial math (one documented exception: BS internals in
+  example 13); examples deterministic and offline; tests live in `tests/` only.
