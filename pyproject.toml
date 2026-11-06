@@ -1,12 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "vyapaar-examples"
 version = "0.1.0"
-description = "vyapaar-examples component of Vyapaar Labs"
+description = "Deterministic, offline-runnable reference learning path for Indian equities, NFO options microstructure, factor models, walk-forward optimization (WFO), and the autonomous AI research loop."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
 dependencies = [
-    "rust_decimal>=1.0.0",
+    "vyapaar>=0.1.0",
+    "vyapaar-strategies>=0.1.0",
+    "vyapaar-data>=0.1.0",
+    "polars>=1.0.0",
+    "pydantic>=2.0.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.8.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["vyapaar_examples*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [".venv", "site", "build"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+ignore_missing_imports = true
+exclude = [".venv", "site", "build"]
