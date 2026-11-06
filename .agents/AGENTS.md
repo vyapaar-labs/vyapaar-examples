@@ -17,7 +17,8 @@
 
 ## 2. Coding Guidelines (TDD)
 * **Parallel Test Directory Rule (MANDATORY)**:
-  - Every `examples/strategies/<num>_<name>.py` must have an automated regression test in `tests/unit/test_<num>_<name>.py`.
+  - Every `examples/strategies/<num>_<name>.py` must have an automated regression test in `tests/unit/test_<num>_<name>.py` (or a `src/tests/` module directory).
+  - **STRICTLY FORBIDDEN**: Inline `test_*` functions inside production source files.
 * **Zero Floats Policy**: Exact decimal math in all examples.
 
 ---
