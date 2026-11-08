@@ -1,18 +1,14 @@
 # 0002 — Staged Port: `honba-examples` → `vyapaar-examples`
 
-> **Status**: **In progress** — Stage 0 (pre-flight), Stage 1 (shared harness),
-> Stage 2 (SDK fundamentals: `basic` 5, `candles` 4, `strategies` 16), Stage 3
-> ✅ DONE (tester & enhancer: `backtesting` 11, `optimizer` 3 + engine mirrors + graft), Stage 4 (lakehouse consumers:
-> `storage` 4, `universes` 10, `mutual_funds` 4) and Stage 5 (screeners: `screening` 8,
-> `chains/` 3 TOMLs) are done; Stages 0-2 landed on
+> **Status**: **In progress** — Stages 0-3 landed on
 > `main` (stacked branches `feat/port-stage-0-preflight` →
-> `feat/port-stage-1-harness-staged-port` → `feat/port-stage-2-sdk-fundamentals`).
-> Gates green after Stage 5: `pytest` 596 passed / 99 skipped, `ruff check`,
-> `ruff format --check`, `mypy vyapaar_examples` (223 files), stage filter
-> (`screener or chain or screening`) 64 passed / 38 skipped. Gaps `0001`–`0004`,
-> `0006`–`0008` filed (`0005` reserved); no new gap filed in Stage 5, gaps `0003` and
-> `0006` cited.
-> Remaining: Stage 6 (derivatives & StockSharp) onward.
+> `feat/port-stage-1-harness-staged-port` → `feat/port-stage-2-sdk-fundamentals` →
+> `feat/port-stage-3-tester-enhancer`). Stage 4 (lakehouse) and Stage 5 (screeners) done in
+> a stacked sequence; Stage 6 (derivatives & StockSharp) just completed:
+> ✅ `options` 8, `stocksharp` 5 (pairs, TWAP/VWAP, turtle, market-maker, risk-parity).
+> Gates green after Stage 6: `pytest` 649 passed / 99 skipped (1 pre-existing failure),
+> `ruff check`, `ruff format --check`, `mypy vyapaar_examples` (229 files). Gaps `0001`–`0004`,
+> `0006`–`0008` filed; Stage 6 added no new gaps. Remaining: Stage 7 (AI research & production).
 > **Source**: `/home/pmallapp/Devel/Finance/honba-workspace/honba-examples`
 > **Target**: `/home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples`
 > **Context correction**: `docs/migration-guide.md` and `.agents/HANDOFF.md` assert the

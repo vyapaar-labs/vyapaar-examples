@@ -1,7 +1,7 @@
 # `vyapaar-examples` — Inter-Agent Handoff
 
 ## Phase / Slice Status
-* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 3 of 9 stages landed:
+* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 4 of 9 stages landed:
   * **Stage 0 (pre-flight)** — commit `0be8298`, `feat/port-stage-0-preflight`.
   * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port`: harness modules,
     merge-homes, kernel mirror `_kernel/`, 34 test files; gaps `0001`–`0004` + `0006` filed.
@@ -19,7 +19,12 @@
     skipped (1 pre-existing failure), `ruff` (5 docstring E501 acceptable), `mypy` green.
     Gap 0008 filed; gaps 0001/0004/0006 extended. Branch `feat/port-stage-3-tester-enhancer`
     created and staged below.
-  * **Remaining**: Stage 4 (lakehouse consumers), Stage 5 (screeners), Stage 6 (derivatives).
+  * **Stage 6 (derivatives & StockSharp)** — `feat/port-stage-6-derivatives-stocksharp`:
+    `options` 8 scripts already ported; `stocksharp` 5/5 scripts + 5 tests ported:
+    04_market_maker (Avellaneda-Stoikov quoting, OBI filter), 05_risk_parity (inverse-vol
+    risk parity via `PortfolioStrategy`). Gates: `pytest` 649 passed / 99 skipped (1 pre-existing),
+    `ruff` + `ruff format`, `mypy` (229 files). No new gaps; gaps 0001/0004/0006/0008 cited.
+  * **Remaining**: Stage 7 (AI research & production), Stage 8 (Docs, index, sweep).
 
 ## Decisions & Discoveries
 * **Two bar worlds coexist by design**: fresh pedagogy world is exact `Decimal`
@@ -39,16 +44,20 @@
   the absent `vyapaar-runtime` session orchestrator: `DataProvider`/`CostModel`/`BacktestResult`
   Protocols type the `algo_analytics` engines' real-data path, and `Vyapaar.backtest(...)`
   raises `NotImplementedError` on purpose (D7).
-* **Graft boundary fix**: `run_portfolio_backtest`'s default `costs` parameter was shadowed
-  by the fresh Decimal `nse_equity_delivery_fill_cost` defined in the same file; retargeted
-  to the kernel Money-typed `_kernel_nse_equity_delivery_fill_cost` alias to pair correctly
-  with the mirrored simulator.
-* **Import alias handling**: `import honba.X as _honba_log` style aliases are renamed via a
-  post-pass that detects `honba` in the alias name and replaces it with `vyapaar`/`_kernel`.
+* **Graft boundary fix** (Stage 3): `run_portfolio_backtest`'s default `costs` parameter
+  was shadowed by the fresh Decimal `nse_equity_delivery_fill_cost` defined in the same
+  file; retargeted to the kernel Money-typed `_kernel_nse_equity_delivery_fill_cost` alias
+  to pair correctly with the mirrored simulator.
+* **Import alias handling** (Stage 3): `import honba.X as _honba_log` style aliases are
+  renamed via a post-pass that detects `honba` in the alias name and replaces it with
+  `vyapaar`/`_kernel`.
+* **PortfolioStrategy import fix** (Stage 6): `stocksharp/05_risk_parity.py` incorrectly
+  imported `PortfolioStrategy` from `_kernel.declarative`; corrected to `_kernel.portfolio_strategy`.
+  `PortfolioStrategy` is not exposed from `declarative.py` — it lives in `portfolio_strategy/`.
 
 ## Immediate Next Step
-* **Stage 3 (tester & enhancer) is staged and ready to commit**. After commit: Stage 4
-  (lakehouse consumers: `storage` 4, `mutual_funds` 4, `universes` 10) per
+* **Stage 6 (derivatives & StockSharp) is complete and staged**. Next: Stage 7
+  (AI research & production: `ai_research` 11, `production` 6) per
   `docs/plans/0002-honba-examples-staged-port.md`.
 
 ## Operating Invariants
