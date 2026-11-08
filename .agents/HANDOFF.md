@@ -1,7 +1,7 @@
 # `vyapaar-examples` — Inter-Agent Handoff
 
 ## Phase / Slice Status
-* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 5 of 9 stages done:
+* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 6 of 9 stages done:
   * **Stage 0 (pre-flight)** — commit `0be8298`, `feat/port-stage-0-preflight`.
   * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port`:
     harness modules, merge-homes, kernel mirror `_kernel/`, 34 test files. Milestone detail
@@ -36,7 +36,7 @@
     `mypy vyapaar_examples` (223 files) — all green; stage filter
     (`parquet or bhavcopy or amfi or nav or universe or alpha30`) 86 passed /
     3 skipped.
-  * **Stage 5 (screeners) — in progress**: `screening` 8/8 scripts landed
+  * **Stage 5 (screeners)**: `screening` 8/8 scripts landed
     (`01_multibagger_screener`…`08_swing_ap_setup_screener`) + `chains/` (3 TOMLs:
     `fundamentals`, `quality_value`, `multibagger_fundamentals`) + `01`'s dedicated
     test. `06_run_chain.py`'s `honba.strategies.loader.CatalogError` import mirrors
@@ -52,11 +52,11 @@
     wheel isn't installed here — gap 0003). Gates: `pytest` 596 passed / 99 skipped,
     `ruff check` + `ruff format --check`, `mypy vyapaar_examples` (223 files) — all
     green; stage filter (`screener or chain or screening`) 64 passed / 38 skipped.
-    Remaining: topic README + `docs/multibagger_screening_research.md`.
+    Topic README and `docs/reference/multibagger_screening_research.md` ported.
   * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
     commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
     branches remain as markers and can be deleted (`git branch -d`).
-  * Remaining: finish Stage 5 (screeners) → Stage 8.
+  * Remaining: Stage 6 (derivatives & StockSharp: `options` 8, `stocksharp` 5) → Stage 8.
 
 ## Decisions & Discoveries
 * **Two bar worlds coexist by design**: fresh pedagogy world is exact `Decimal`
@@ -131,9 +131,10 @@
   (D4 rename missed), breaking the three consumers that already said `Vyapaar`.
 
 ## Immediate Next Step
-* **Stage 4 (lakehouse consumers) is complete**: `storage` 4/4, `mutual_funds` 4/4 and
-  `universes` 10/10 scripts ported with tests and topic READMEs. Next: Stage 5
-  (screeners, `screening` 8 scripts) per `docs/plans/0002-honba-examples-staged-port.md`.
+* **Stage 5 (screeners) is complete**: `screening` 8/8 scripts, `chains/` 3 TOMLs, topic
+  README and `docs/reference/multibagger_screening_research.md` ported. Next: Stage 6
+  (derivatives & StockSharp: `options` 8, `stocksharp` 5) per
+  `docs/plans/0002-honba-examples-staged-port.md`.
 
 ## Operating Invariants
 * Zero floats in financial math (documented exceptions: BS internals example 13; grafted
