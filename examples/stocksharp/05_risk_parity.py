@@ -44,11 +44,14 @@ import sys
 from datetime import date
 from typing import Any
 
-from vyapaar_examples._kernel.entities import Bar, InstrumentId, Trade
-from vyapaar_examples._kernel.portfolio_strategy import PortfolioStrategy
 from vyapaar_examples._kernel.context import LedgerContext
-from vyapaar_examples._kernel.portfolio_strategy import EveryNDays, InverseVolatility, StaticUniverse
-
+from vyapaar_examples._kernel.entities import Bar, InstrumentId, Trade
+from vyapaar_examples._kernel.portfolio_strategy import (
+    EveryNDays,
+    InverseVolatility,
+    PortfolioStrategy,
+    StaticUniverse,
+)
 from vyapaar_examples.cli import add_out_arg, emit_json, make_parser
 from vyapaar_examples.synthetic import session_ts, weekdays
 
