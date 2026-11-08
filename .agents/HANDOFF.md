@@ -36,14 +36,23 @@
     `mypy vyapaar_examples` (223 files) — all green; stage filter
     (`parquet or bhavcopy or amfi or nav or universe or alpha30`) 86 passed /
     3 skipped.
-  * **Stage 5 (screeners) — in progress**: `screening` 1/8 landed (`01_multibagger_screener`
-    + its dedicated test). Also fixed a latent bug surfaced by un-skipping
-    `tests/unit/test_screening_cli.py` (ported Stage 1, dormant while
-    `examples/screening/` didn't exist): 3 of its tests called
-    `resolve_catalog_dir()`/`run()` with no real NSE catalog on disk and failed outright
-    instead of skipping; reworked them to request a `_real_catalog` fixture mirroring
-    `test_10_chained_screener_and_sip.py`'s pattern, citing gap 0003. Remaining:
-    `02`-`08` + `chains/` TOMLs + topic README + `docs/multibagger_screening_research.md`.
+  * **Stage 5 (screeners) — in progress**: `screening` 8/8 scripts landed
+    (`01_multibagger_screener`…`08_swing_ap_setup_screener`) + `chains/` (3 TOMLs:
+    `fundamentals`, `quality_value`, `multibagger_fundamentals`) + `01`'s dedicated
+    test. `06_run_chain.py`'s `honba.strategies.loader.CatalogError` import mirrors
+    to `_kernel.loader` citing gap 0006. Also fixed two latent bugs surfaced by
+    un-skipping `tests/unit/test_screening_cli.py` (ported Stage 1, dormant while
+    `examples/screening/` didn't exist): (1) 3 tests called
+    `resolve_catalog_dir()`/`run()` with no real NSE catalog on disk and failed
+    outright instead of skipping; reworked them to request a `_real_catalog` fixture
+    mirroring `test_10_chained_screener_and_sip.py`'s pattern, citing gap 0003.
+    (2) a missed D5 rename — `pytest.importorskip("honba_data", ...)` never matched
+    any real package name, so the mutual-fund execution test always skipped for the
+    wrong reason; renamed to `vyapaar_data` (still skips today, correctly, since that
+    wheel isn't installed here — gap 0003). Gates: `pytest` 596 passed / 99 skipped,
+    `ruff check` + `ruff format --check`, `mypy vyapaar_examples` (223 files) — all
+    green; stage filter (`screener or chain or screening`) 64 passed / 38 skipped.
+    Remaining: topic README + `docs/multibagger_screening_research.md`.
   * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
     commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
     branches remain as markers and can be deleted (`git branch -d`).

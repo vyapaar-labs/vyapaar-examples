@@ -188,7 +188,9 @@ def test_screener_stream_feeds_backtester_parser():
 
 
 def test_mutual_fund_screener_execution(mf_script, capsys):
-    pytest.importorskip("honba_data", reason="mutual-fund screener needs the [mutual-funds] extra")
+    pytest.importorskip(
+        "vyapaar_data", reason="mutual-fund screener needs the [mutual-funds] extra"
+    )
     example = mf_script.MutualFundScreenerExample()
     example.stream_format = "symbols"
     example.category = "Equity:Flexi Cap"
