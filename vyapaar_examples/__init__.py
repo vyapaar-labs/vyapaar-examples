@@ -1,4 +1,4 @@
-"""vyapaar-examples — Reference Learning Path shared harness.
+"""Vyapaar-examples — learning-path helpers and shared ported harness for the numbered examples.
 
 Deterministic, offline helpers for the numbered example scripts: synthetic
 Decimal-paise bar generation, minimal indicators, performance metrics, a simple

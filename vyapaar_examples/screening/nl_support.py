@@ -1,0 +1,421 @@
+"""vyapaar_examples.screening.nl_support: plumbing for the natural-language screener.
+
+Shares-outstanding table, the Ollama HTTP backend, LLM-backend selection, the restricted
+predicate evaluator, as-of date resolution, and forward-performance / basket statistics.
+The NL -> filter -> predicate idea itself lives in ``ai_research/03_nl_screener.py``.
+"""
+
+from __future__ import annotations
+
+import ast
+import datetime as dt
+import json
+import math
+import re
+import urllib.error
+import urllib.request
+from collections.abc import Callable, Sequence
+from typing import Any
+
+from vyapaar_examples._kernel.evaluator import extract_metrics_from_bars
+from vyapaar_examples.fake_llm import LlmPort, ScriptedFakeLlm
+
+__all__ = [
+    "KNOWN_METRICS",
+    "MCAP_UNIT_MULTIPLIER",
+    "NIFTY50_SHARES_CR",
+    "VOLUME_UNIT_MULTIPLIER",
+    "OllamaLlm",
+    "PredicateError",
+    "UnknownMetricError",
+    "UnparsedClausesError",
+    "basket_statistics",
+    "build_point_in_time_row",
+    "forward_performance",
+    "market_cap_notes",
+    "resolve_asof",
+    "resolve_llm_provider",
+    "safe_eval_predicate",
+]
+
+# Metrics present on every point-in-time row (see ``build_point_in_time_row``). The predicate
+# generator and evaluator accept nothing else: an unknown name is an error, never a default.
+KNOWN_METRICS: frozenset[str] = frozenset(
+    {
+        "close",
+        "volume",
+        "sma20",
+        "sma50",
+        "rsi",
+        "market_cap",
+        "market_cap_basic",
+        "market_cap_cr",
+        "entry_close",
+    }
+)
+
+
+class PredicateError(ValueError):
+    """A filter could not be turned into (or run as) a safe predicate."""
+
+
+class UnknownMetricError(PredicateError):
+    """A metric name that is not in ``KNOWN_METRICS`` (often an LLM hallucination)."""
+
+
+class UnparsedClausesError(PredicateError):
+    """Clauses of the filter text the predicate generator could not parse."""
+
+    def __init__(self, clauses: list[str]) -> None:
+        self.clauses = clauses
+        super().__init__(f"could not parse filter clause(s): {clauses}")
+
+
+def market_cap_notes() -> list[str]:
+    """Caveats to print next to any market-cap based result."""
+    return [
+        (
+            "market_cap is approximate: as-of close x a fixed share-count table "
+            "(NIFTY50_SHARES_CR, 50 crore shares for a symbol missing from it); there is no "
+            "per-date share history, so past market caps are not point-in-time."
+        )
+    ]
+
+
+# Approximate shares outstanding (in Crore shares) for Nifty 50 constituents
+NIFTY50_SHARES_CR: dict[str, float] = {
+    "RELIANCE": 676.6,
+    "TCS": 361.8,
+    "HDFCBANK": 762.5,
+    "BHARTIARTL": 601.2,
+    "ICICIBANK": 706.3,
+    "INFY": 415.1,
+    "SBIN": 892.4,
+    "ITC": 1250.7,
+    "HINDUNILVR": 234.9,
+    "LT": 137.4,
+    "BAJFINANCE": 61.9,
+    "HCLTECH": 271.4,
+    "M&M": 124.3,
+    "MARUTI": 31.4,
+    "SUNPHARMA": 239.9,
+    "TITAN": 88.8,
+    "TATAMOTORS": 368.5,
+    "ADANIENT": 114.0,
+    "KOTAKBANK": 198.8,
+    "NTPC": 969.7,
+    "ONGC": 1258.0,
+    "POWERGRID": 930.0,
+    "COALINDIA": 616.3,
+    "AXISBANK": 309.2,
+    "TATASTEEL": 1248.4,
+    "ASIANPAINT": 95.9,
+    "BAJAJFINSV": 159.5,
+    "NESTLEIND": 96.4,
+    "ULTRACEMCO": 28.9,
+    "WIPRO": 523.0,
+    "ADANIPORTS": 216.0,
+    "JSWSTEEL": 244.5,
+    "GRASIM": 67.9,
+    "LTIM": 29.6,
+    "TECHM": 98.0,
+    "HINDALCO": 224.7,
+    "DIVISLAB": 26.5,
+    "CIPLA": 80.7,
+    "SBILIFE": 100.1,
+    "DRREDDY": 16.7,
+    "TATACONSUM": 95.3,
+    "BRITANNIA": 24.1,
+    "BPCL": 216.9,
+    "EICHERMOT": 27.4,
+    "APOLLOHOSP": 14.4,
+    "SHRIRAMFIN": 37.6,
+    "HEROMOTOCO": 20.0,
+    "INDUSINDBK": 77.8,
+    "BAJAJ-AUTO": 27.9,
+    "BEL": 731.0,
+    "TRENT": 35.5,
+}
+
+# Unit suffix -> multiplier, for market cap (rupees) and volume (shares).
+MCAP_UNIT_MULTIPLIER: dict[str, float] = {
+    **dict.fromkeys(("cr", "crore", "crores"), 1e7),
+    **dict.fromkeys(("l", "lk", "lac", "lakh", "lakhs"), 1e5),
+    "k": 1e3,
+    **dict.fromkeys(("m", "mn"), 1e6),
+    **dict.fromkeys(("b", "bn"), 1e9),
+}
+VOLUME_UNIT_MULTIPLIER: dict[str, int] = {
+    "k": 1_000,
+    "m": 1_000_000,
+    "l": 100_000,
+    "cr": 10_000_000,
+}
+
+
+def build_point_in_time_row(
+    symbol: str, all_bars: Sequence[Any], asof_ns: int, metrics: list[str]
+) -> tuple[dict[str, Any], float] | None:
+    """Metrics row for ``symbol`` from bars up to ``asof_ns``; ``None`` if < 50 bars of history."""
+    historical_bars = [b for b in all_bars if b.ts <= asof_ns]
+    if len(historical_bars) < 50:
+        return None
+
+    extracted = extract_metrics_from_bars(metrics, historical_bars)
+    entry_close = float(extracted.get("close") or 0.0)
+
+    # Dynamic market cap as of historical entry date
+    shares_cr = NIFTY50_SHARES_CR.get(symbol, 50.0)
+    mcap = entry_close * shares_cr * 1e7
+
+    row = {
+        "symbol": f"{symbol}.NSE",
+        **extracted,
+        "market_cap": mcap,
+        "market_cap_basic": mcap,
+        "market_cap_cr": mcap / 1e7,
+        "entry_close": entry_close,
+    }
+    return row, entry_close
+
+
+class OllamaLlm(LlmPort):
+    """Local Ollama HTTP client (e.g. Llama 3.2, Qwen 2.5) at localhost:11434."""
+
+    def __init__(
+        self,
+        model: str = "llama3.2",
+        host: str = "http://localhost:11434",
+    ) -> None:
+        self.model = model
+        self.host = host
+
+    def complete(
+        self,
+        messages: Sequence[dict[str, str]],
+        grammar: str | None = None,
+        schema: dict[str, Any] | None = None,
+        seed: int | None = None,
+        temperature: float = 0.0,
+    ) -> str:
+        payload = {
+            "model": self.model,
+            "messages": list(messages),
+            "stream": False,
+            "options": {"temperature": temperature},
+        }
+        req = urllib.request.Request(
+            f"{self.host}/api/chat",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return str(data["message"]["content"])
+
+
+def resolve_llm_provider(backend: str, offline: Callable[[], LlmPort]) -> LlmPort:
+    """Pick the translation backend; ``offline`` builds the deterministic rule-based fallback."""
+    if backend == "ollama":
+        return OllamaLlm()
+    if backend == "fake":
+        return ScriptedFakeLlm(default_response="volume > 500000 AND close > sma50")
+    # auto: probe Ollama HTTP endpoint, fallback to rule-based offline
+    try:
+        with urllib.request.urlopen("http://localhost:11434/api/tags", timeout=1):
+            return OllamaLlm()
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return offline()
+
+
+_ALLOWED_EXPR_NODES: tuple[type[ast.AST], ...] = (
+    ast.BoolOp,
+    ast.And,
+    ast.Or,
+    ast.Compare,
+    ast.Lt,
+    ast.LtE,
+    ast.Gt,
+    ast.GtE,
+    ast.Eq,
+    ast.NotEq,
+    ast.UnaryOp,
+    ast.Not,
+    ast.USub,
+    ast.UAdd,
+    ast.BinOp,
+    ast.Add,
+    ast.Sub,
+    ast.Mult,
+    ast.Div,
+    ast.Mod,
+    ast.Name,
+    ast.Load,
+    ast.Constant,
+)
+
+
+def _predicate_expression(tree: ast.Module) -> ast.expr:
+    """The single returned expression of ``def match(row): return <expr>``, else PredicateError."""
+    if len(tree.body) != 1 or not isinstance(tree.body[0], ast.FunctionDef):
+        raise PredicateError("predicate must be exactly one 'def match(row)' function")
+    fn = tree.body[0]
+    a = fn.args
+    if (
+        fn.name != "match"
+        or fn.decorator_list
+        or fn.returns is not None
+        or [x.arg for x in a.args] != ["row"]
+        or a.posonlyargs
+        or a.kwonlyargs
+        or a.vararg
+        or a.kwarg
+        or a.defaults
+        or a.args[0].annotation is not None
+    ):
+        raise PredicateError("predicate must be exactly 'def match(row): return <expression>'")
+    if len(fn.body) != 1 or not isinstance(fn.body[0], ast.Return) or fn.body[0].value is None:
+        raise PredicateError("predicate body must be a single return statement")
+    return fn.body[0].value
+
+
+def safe_eval_predicate(
+    predicate_code: str, row: dict[str, Any], allowed: frozenset[str] = KNOWN_METRICS
+) -> bool:
+    """Evaluate ``def match(row): return <expr>`` against ``row`` after a whitelist AST walk.
+
+    Only boolean/comparison/arithmetic (``+ - * / %``) expressions over numeric constants and
+    metric names in ``allowed`` pass; calls, attributes, subscripts, lambdas, comprehensions,
+    conditionals, strings and every other node are rejected before anything is compiled. The
+    expression is evaluated with no builtins. A metric that is missing, None or NaN in ``row``
+    makes the predicate False (fail closed), never a default value.
+
+    Raises:
+        PredicateError: the code is not an allowed predicate (``UnknownMetricError`` for a name
+            outside ``allowed``).
+    """
+    try:
+        tree = ast.parse(predicate_code)
+    except SyntaxError as exc:
+        raise PredicateError(f"predicate is not valid Python: {exc.msg}") from exc
+    expr = _predicate_expression(tree)
+
+    names: set[str] = set()
+    for node in ast.walk(expr):
+        if not isinstance(node, _ALLOWED_EXPR_NODES):
+            raise PredicateError(f"disallowed expression element: {type(node).__name__}")
+        if isinstance(node, ast.Constant) and (
+            isinstance(node.value, complex) or not isinstance(node.value, (int, float, bool))
+        ):
+            raise PredicateError(f"disallowed constant: {node.value!r}")
+        if isinstance(node, ast.Name):
+            if node.id not in allowed:
+                raise UnknownMetricError(f"unknown metric {node.id}; known: {sorted(allowed)}")
+            names.add(node.id)
+
+    values: dict[str, Any] = {}
+    for name in names:
+        v = row.get(name)
+        if v is None or isinstance(v, bool) or not isinstance(v, (int, float)) or math.isnan(v):
+            return False
+        values[name] = v
+
+    code = compile(ast.Expression(expr), "<screener_predicate>", "eval")
+    try:
+        return bool(eval(code, {"__builtins__": {}}, values))
+    except ZeroDivisionError:
+        return False
+
+
+def resolve_asof(
+    query: str,
+    asof: str | dt.date | None,
+    lookback_years: int | None,
+    backtest: bool,
+    today: dt.date,
+) -> tuple[dt.date, bool]:
+    """Resolve the point-in-time date (explicit, lookback, or parsed from the query).
+
+    Returns ``(asof_date, backtest)``; phrases like "5 years ago" or a bare year switch
+    ``backtest`` on.
+    """
+    asof_date: dt.date | None = None
+    if asof:
+        asof_date = dt.date.fromisoformat(str(asof))
+    elif lookback_years is not None:
+        asof_date = today.replace(year=today.year - lookback_years)
+    else:
+        # Only date phrasing counts: "N years ago", an ISO date, "in 2020" or "as of 2020".
+        # A bare number such as "volume > 2020" is not a date.
+        ago_match = re.search(r"(\d+)\s*years?\s*ago", query.lower())
+        iso_match = re.search(r"\b(\d{4}-\d{2}-\d{2})\b", query)
+        yr_match = re.search(r"\b(?:in|as\s+of)\s+(201[5-9]|202[0-5])\b", query.lower())
+        if ago_match:
+            asof_date = today.replace(year=today.year - int(ago_match.group(1)))
+            backtest = True
+        elif iso_match:
+            asof_date = dt.date.fromisoformat(iso_match.group(1))
+            backtest = True
+        elif yr_match:
+            asof_date = dt.date(int(yr_match.group(1)), 10, 11)
+            backtest = True
+    return (today if asof_date is None else asof_date), backtest
+
+
+def forward_performance(
+    entry_close: float, term_close: float, asof_date: dt.date, term_date: dt.date
+) -> dict[str, Any]:
+    """Forward return, CAGR, bag multiplier and badge from entry to terminal close."""
+    days_held = (term_date - asof_date).days
+    years_held = max(days_held / 365.25, 0.1)
+
+    ret_pct = ((term_close - entry_close) / entry_close) * 100
+    mult = term_close / entry_close
+    cagr = ((mult ** (1.0 / years_held)) - 1.0) * 100
+
+    if mult >= 10.0:
+        badge = "10-Bagger \U0001f3c6"
+    elif mult >= 5.0:
+        badge = "5-Bagger \U0001f680"
+    elif mult >= 2.0:
+        badge = "Multibagger \U0001f525"
+    elif ret_pct > 0:
+        badge = "Profitable \U0001f4c8"
+    else:
+        badge = "Loss \U0001f53b"
+
+    return {
+        "current_close": term_close,
+        "return_pct": ret_pct,
+        "cagr": cagr,
+        "multiplier": mult,
+        "years_held": years_held,
+        "badge": badge,
+    }
+
+
+def basket_statistics(
+    matched_rows: list[dict[str, Any]], asof_date: dt.date, term_date: dt.date
+) -> dict[str, Any]:
+    """Equal-weight basket summary of the forward performance of the matched rows."""
+    if not matched_rows:
+        return {}
+    avg_ret = sum(r["return_pct"] for r in matched_rows) / len(matched_rows)
+    avg_mult = sum(r["multiplier"] for r in matched_rows) / len(matched_rows)
+    avg_years = matched_rows[0]["years_held"]
+    basket_cagr = ((avg_mult ** (1.0 / avg_years)) - 1.0) * 100
+    win_rate = sum(1 for r in matched_rows if r["return_pct"] > 0) / len(matched_rows) * 100
+    baggers = sum(1 for r in matched_rows if r["multiplier"] >= 2.0)
+    top_pick = max(matched_rows, key=lambda r: r["return_pct"])
+
+    return {
+        "asof_date": str(asof_date),
+        "terminal_date": str(term_date),
+        "years_held": round(avg_years, 1),
+        "basket_return_pct": round(avg_ret, 1),
+        "basket_cagr_pct": round(basket_cagr, 1),
+        "win_rate_pct": round(win_rate, 1),
+        "multibagger_count": f"{baggers} / {len(matched_rows)}",
+        "top_performer": f"{top_pick['symbol']} (+{top_pick['return_pct']:.1f}%, "
+        f"{top_pick['multiplier']:.2f}x)",
+    }

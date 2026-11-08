@@ -8,12 +8,16 @@ bar's close and marks-to-market the equity at every bar. Round-trip PnL is
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from vyapaar_examples._compat import D
+from vyapaar_examples._kernel.order import OrderSide
 from vyapaar_examples.data import Bar
 from vyapaar_examples.metrics import PerformanceMetrics, Trade, compute_metrics
 
@@ -113,3 +117,62 @@ class Backtest:
             metrics=metrics,
             final_equity=equity_curve[-1],
         )
+
+
+# ---------------------------------------------------------------------------
+# Stage-1 grafts from the harness backtest module (staged port, plan 0002)
+# ---------------------------------------------------------------------------
+FillCostFn = Callable[[OrderSide, Decimal, Decimal], Decimal]
+"""Simulator fill-cost contract: ``(side, quantity, price) -> cost``; cost in INR Decimal."""
+
+
+def canonical_hash(payload: Any) -> str:
+    """sha256 of the canonical (sorted-key, compact) JSON form of ``payload``."""
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+# India equity-delivery (CNC) rates transcribed exactly from the kernel cost pack
+# (markets.india.costs, 2025-26 discount-broker schedule).
+_PAISE = Decimal("0.01")
+_EQ_DEL_STT_SELL = Decimal("0.0010")
+_EQ_DEL_STAMP_BUY = Decimal("0.00015")
+_EQ_DEL_EXCH = Decimal("0.0000297")
+_EQ_DEL_SEBI = Decimal("0.000001")
+_EQ_DEL_IPFT = Decimal("0.000001")
+_EQ_DEL_BROKERAGE_PCT = Decimal("0.0003")
+_EQ_DEL_BROKERAGE_CAP = Decimal("20")
+_GST_RATE = Decimal("0.18")
+
+
+def _is_buy(side: OrderSide | str) -> bool:
+    return str(getattr(side, "value", side)).upper().endswith("BUY")
+
+
+def nse_equity_delivery_fill_cost(side: OrderSide, quantity: Decimal, price: Decimal) -> Decimal:
+    """NSE equity-delivery (CNC) cost of one fill as exact Decimal.
+
+    Each leg is rounded to the paisa once, then legs sum (matching the kernel cost
+    pack's fill-cost function). Statutory legs: STT on sell only, stamp duty on buy
+    only, GST on the taxable legs. Second-arg/3rd-arg also accept strings/ints via
+    ``Decimal(str(...))`` so callers never need floats.
+    """
+    qty = quantity if isinstance(quantity, Decimal) else Decimal(str(quantity))
+    px = price if isinstance(price, Decimal) else Decimal(str(price))
+    notional = abs(qty * px)
+    if notional <= 0:
+        return _PAISE
+    brokerage = min(_EQ_DEL_BROKERAGE_PCT * notional, _EQ_DEL_BROKERAGE_CAP)
+    legs = (
+        brokerage,
+        _PAISE if _is_buy(side) else _EQ_DEL_STT_SELL * notional,
+        _EQ_DEL_EXCH * notional,
+        _EQ_DEL_SEBI * notional,
+        _EQ_DEL_IPFT * notional,
+        _EQ_DEL_STAMP_BUY * notional if _is_buy(side) else _PAISE,
+        _GST_RATE * (brokerage + (_EQ_DEL_EXCH + _EQ_DEL_SEBI + _EQ_DEL_IPFT) * notional),
+    )
+    total = _PAISE
+    for leg in legs:
+        total += leg.quantize(_PAISE)
+    return total
