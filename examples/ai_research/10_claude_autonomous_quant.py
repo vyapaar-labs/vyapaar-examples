@@ -89,8 +89,7 @@ def _schema_path() -> Path | None:
     candidates = [
         repo_root.parent / "vyapaar-market" / "schema" / "mcp" / "mcp_tools.json",
         repo_root.parent / "vyapaar-agent" / "schema" / "mcp" / "mcp_tools.json",
-        repo_root.parent / "honba-tamashii" / "schema" / "mcp" / "mcp_tools.json",
-        repo_root / "honba" / "schema" / "mcp" / "mcp_tools.json",
+        repo_root / "schema" / "mcp" / "mcp_tools.json",
     ]
     for c in candidates:
         if c.exists():
@@ -124,7 +123,7 @@ def _mcp_tools() -> list[dict[str, Any]]:
         return [
             {
                 "name": "backtest",
-                "description": "Run an Honba backtest for a strategy over a window",
+                "description": "Run a Vyapaar backtest for a strategy over a window",
                 "read_only": True,
             },
             {
@@ -157,7 +156,7 @@ def _mcp_tools_static() -> list[dict[str, Any]]:
     return [
         {
             "name": "backtest",
-            "description": "Run an Honba backtest for a strategy over a window",
+            "description": "Run a Vyapaar backtest for a strategy over a window",
             "read_only": True,
         },
         {

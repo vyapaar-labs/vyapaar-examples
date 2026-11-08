@@ -1,8 +1,8 @@
-"""Backward compatibility re-exports for honba.entities.
+"""Backward compatibility re-exports for vyapaar.entities.
 
 Entities are split into:
-- honba.domain: Pure domain models (Bar, Instrument, Order, Position, Portfolio, etc.)
-- honba.wire: Serialization and wire contracts (ADR 006)
+- vyapaar.domain: Pure domain models (Bar, Instrument, Order, Position, Portfolio, etc.)
+- vyapaar.wire: Serialization and wire contracts (ADR 006)
 """
 # ruff: noqa: F822
 

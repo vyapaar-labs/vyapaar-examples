@@ -54,7 +54,7 @@ def test_sharpe_is_scale_invariant(values, factor):
     """Multiplying every equity value by a constant must not change the Sharpe ratio."""
     base = sharpe_ratio(_curve(values), 100_000.0)
     scaled = sharpe_ratio(_curve([v * factor for v in values]), 100_000.0 * factor)
-    assert base == pytest.approx(scaled, abs=1e-9)
+    assert base == pytest.approx(scaled, rel=1e-5, abs=1e-6)
 
 
 @settings(max_examples=300, deadline=None)

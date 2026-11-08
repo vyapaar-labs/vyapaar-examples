@@ -177,7 +177,7 @@ def load_strategy(path: str | Path) -> type[Strategy]:
     if not path.is_file():
         raise CatalogError(f"strategy file {path} not found")
     digest = hashlib.sha256(str(path).encode()).hexdigest()[:12]
-    module = _import_file(path, f"honba_user_strategy_{path.stem}_{digest}")
+    module = _import_file(path, f"vyapaar_user_strategy_{path.stem}_{digest}")
     classes = _strategy_classes(module)
     if len(classes) != 1:
         found = "no Strategy subclass" if not classes else f"{len(classes)} Strategy subclasses"
@@ -458,7 +458,7 @@ def load_catalog_strategy(
     if not (strategy_dir / "strategy.py").is_file():
         raise CatalogError(f"strategy {name!r}: {strategy_dir / 'strategy.py'} not found")
     mod_suffix = v_info.version.replace(".", "_").replace("-", "_")
-    module = _load_module_isolated(strategy_dir, catalog, f"honba_catalog_{name}_{mod_suffix}")
+    module = _load_module_isolated(strategy_dir, catalog, f"vyapaar_catalog_{name}_{mod_suffix}")
     classes = _strategy_classes(module)
     named = [c for c in classes if getattr(c, "name", None) == name]
     if len(named) == 1:

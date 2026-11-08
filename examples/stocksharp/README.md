@@ -32,7 +32,7 @@ pytest tests/unit -q -k "pairs_trading or twap_vwap or turtle_breakout or market
 
 ## Notes on the ports
 
-* `02_twap_vwap.py` reuses the freeze-limit helpers in `honba_examples.options`
+* `02_twap_vwap.py` reuses the freeze-limit helpers in `vyapaar_examples.options`
   (`freeze_limit_qty`, `slice_order`, `verify_slices`) — the same ones the
   Phase 3 options examples use — so a 5,000-contract parent is always sliced
   below the instrument's freeze limit before it is "submitted".

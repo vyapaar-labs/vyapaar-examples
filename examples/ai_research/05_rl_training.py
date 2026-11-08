@@ -1,8 +1,8 @@
 """ai_research/05_rl_training: design placeholder for reinforcement-learning training.
 
-See README for details. ``honba.ai.rl.*`` are 0-byte stubs and torch and gymnasium are optional
-extras, so this file runs nothing. The Pitfalls below are the traps an RL trainer must defend
-against, not behaviour you can run.
+See README for details. ``vyapaar.ai.rl.*`` are stubs (gap 0002) and torch and gymnasium
+are optional extras, so this file runs nothing. The Pitfalls below are the traps an RL
+trainer must defend against, not behaviour you can run.
 
 Pitfalls::
 

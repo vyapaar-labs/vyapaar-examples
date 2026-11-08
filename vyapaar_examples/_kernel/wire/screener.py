@@ -1,4 +1,4 @@
-"""Screener and metric definition models for Honba (ADR 006 / Pillar P2)."""
+"""Screener and metric definition models for Vyapaar (ADR 006 / Pillar P2)."""
 
 from __future__ import annotations
 
@@ -117,7 +117,7 @@ class MetricDefinition(_Command):
 
     ``key`` is the wire key sent to the backend. ``ui_id`` (``uiId``) is the frontend
     column id and must never be emitted on the wire. ``aliases`` are natural-language
-    phrases the NL layer (``honba.screener.MetricCatalog.resolve``) maps to ``key``.
+    phrases the NL layer (``vyapaar.screener.MetricCatalog.resolve``) maps to ``key``.
     """
 
     key: Str

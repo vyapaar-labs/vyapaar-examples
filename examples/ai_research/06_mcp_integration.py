@@ -48,8 +48,6 @@ def _schema_path() -> Path:
     candidates = [
         repo_root.parent / "vyapaar-market" / "schema" / "mcp" / "mcp_tools.json",
         repo_root.parent / "vyapaar-agent" / "schema" / "mcp" / "mcp_tools.json",
-        repo_root.parent / "honba-tamashii" / "schema" / "mcp" / "mcp_tools.json",
-        repo_root.parent / "honba" / "schema" / "mcp" / "mcp_tools.json",
         repo_root / "schema" / "mcp" / "mcp_tools.json",
     ]
     for c in candidates:

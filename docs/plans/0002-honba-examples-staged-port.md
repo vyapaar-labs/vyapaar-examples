@@ -1,14 +1,17 @@
 # 0002 — Staged Port: `honba-examples` → `vyapaar-examples`
 
-> **Status**: **In progress** — Stages 0-3 landed on
-> `main` (stacked branches `feat/port-stage-0-preflight` →
-> `feat/port-stage-1-harness-staged-port` → `feat/port-stage-2-sdk-fundamentals` →
-> `feat/port-stage-3-tester-enhancer`). Stage 4 (lakehouse), Stage 5 (screeners),
-> Stage 6 (derivatives & StockSharp), and Stage 7 (AI research & production) completed:
-> ✅ `ai_research` 11, `production` 6.
-> Gates green after Stage 7: `pytest` (62 passed in Stage 7 suite, 49 in nl_support),
-> `ruff check`, `ruff format --check`, `mypy vyapaar_examples` (234 files). Gaps `0001`–`0004`,
-> `0006`–`0008` filed. Remaining: Stage 8 (Docs, index, suite sweep).
+> **Status**: **Implemented** — All Stages 0–8 complete:
+> - Stage 0 (pre-flight) & Stage 1 (shared harness) landed.
+> - Stage 2 (SDK fundamentals: basic 5, candles 4, strategies 16) landed.
+> - Stage 3 (tester & enhancer: backtesting 11, optimizer 3) landed.
+> - Stage 4 (lakehouse: storage 4, universes 10, mutual_funds 4) landed.
+> - Stage 5 (screeners: screening 8 + chains) landed.
+> - Stage 6 (derivatives & StockSharp: options 8, stocksharp 5) landed.
+> - Stage 7 (AI research & production: ai_research 11, production 6) landed.
+> - Stage 8 (docs, 13 topic READMEs + examples/README.md master index, concept docs in
+>   `docs/reference/`, complete test suite across 137 test modules + snapshots, and sweep gate) completed.
+> Gates green: `pytest` (922 passed, 70 skipped), `ruff check .`, `ruff format --check .`,
+> `mypy vyapaar_examples` (234 files). Gaps `0001`–`0008` filed and documented.
 > **Source**: `/home/pmallapp/Devel/Finance/honba-workspace/honba-examples`
 > **Target**: `/home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples`
 > **Context correction**: `docs/migration-guide.md` and `.agents/HANDOFF.md` assert the

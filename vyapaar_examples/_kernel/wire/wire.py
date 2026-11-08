@@ -38,8 +38,8 @@ from vyapaar_examples._kernel.wire.screener import ScreenerFilterPredicate
 def __getattr__(name: str) -> Any:
     """Lazy ``SCHEMA_VERSION`` / ``API_VERSION``, read from their one owner in Rust (ADR 0012).
 
-    ``SCHEMA_VERSION`` is ``honba_messages::SCHEMA_VERSION`` (wire-contract version) and
-    ``API_VERSION`` is ``honba_messages::API_VERSION``. Resolved on first access so that
+    ``SCHEMA_VERSION`` is ``vyapaar_core::SCHEMA_VERSION`` (wire-contract version) and
+    ``API_VERSION`` is ``vyapaar_core::API_VERSION``. Resolved on first access so that
     importing this module does not need the compiled extension.
     """
     if name in ("SCHEMA_VERSION", "API_VERSION"):
@@ -581,7 +581,7 @@ ENUMS: Final[dict[str, type[Enum]]] = {
     "PositionSide": PositionSide,
     "Currency": Currency,
 }
-"""Wire enum name (as in ``vyapaar._honba.wire_enum_values``) to its Python enum.
+"""Wire enum name (as in ``vyapaar._kernel.wire_enum_values``) to its Python enum.
 
 Aliases (``OrderType.STOP``) are not separate members, so iterating an enum
 yields exactly its canonical wire values.

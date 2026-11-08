@@ -3,7 +3,7 @@
 Amounts are ``int`` minor units (see ``Currency.minor_unit``; one major unit is
 ``10**Currency.minor_exponent`` minor units), so the ledger is exact. The
 exponent and unit names come from the Rust table via
-``vyapaar._honba.currency_minor_units`` (no second table here). Conversion from major units is explicit and rounds the same
+``vyapaar._kernel.currency_minor_units`` (no second table here). Conversion from major units is explicit and rounds the same
 way as Rust:
 
 - ``from_major`` / ``mul_qty``: nearest minor unit, half away from zero.

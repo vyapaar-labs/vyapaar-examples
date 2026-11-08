@@ -2,7 +2,7 @@
 
 Parity note: ``OrderType.TRAILING_STOP`` and the ``trail_amount`` / ``trail_percent`` fields
 exist in Rust (``OrderType::TrailingStop``, ``OrderIntent``, ``Order``) and on the wire, with the
-same validation table, so a trailing stop crosses the ``_honba`` boundary losslessly.
+same validation table, so a trailing stop crosses the ``_vyapaar`` boundary losslessly.
 """
 
 from __future__ import annotations
