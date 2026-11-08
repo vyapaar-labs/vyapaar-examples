@@ -16,7 +16,8 @@ Numbering is per-repo, sequential, never reused. Open an issue file
 | 0003 | `0003-vyapaar-data-nav-loaders` | `vyapaar_data` loaders/store/mutual-funds/coverage surface missing → in-repo `amfi.py` + `VYAAPAAR_DATA_DIR` test seam | `vyapaar-data` | open (filed, Stage 1) |
 | 0004 | `0004-vyapaar-wheel-display-universes-client` | `honba.display`, `honba.markets.india.universes`, `honba.client`, `honba.cli.data` missing → mirrors in `display_style.py` / `universe_lists.py` / `cli.py` / `options/*` | `vyapaar-ffi` | open (filed, Stage 1) |
 | 0005 | `0005-vyapaar-exec-freeze-slicer-mirror` | freeze-limit auto-slicing only mirrored; wheel `Sizer` cannot slice | `vyapaar-exec` (freeze slicer crate) / `vyapaar-ffi` | reserved (Stage 5) |
-| 0006 | `0006-vyapaar-wheel-kernel-domain-surface` | kernel-domain engine surface (types, Strategy contract, manifests/wire, store, evaluator, native attributes) absent from the wheel → `_kernel/` mirror + `native.py` pins | `vyapaar-ffi` | open (filed, Stage 1) |
+| 0006 | `0006-vyapaar-wheel-kernel-domain-surface` | kernel-domain engine surface (types, Strategy contract, manifests/wire, store, evaluator, native attributes, indicator registry, declarative/execution/sizing, portfolio_strategy) absent from the wheel → `_kernel/` mirror + `native.py` pins | `vyapaar-ffi` | open (filed, Stage 1; extended Stage 2) |
+| 0007 | `0007-vyapaar-adapters-framework-surface` | `honba.adapters` framework (contract/registry/capabilities/models/FakeAdapter/session/rate_limit/secrets) absent from the wheel → `_kernel/adapters/` mirror (13 files; `rest.py`+`gateway.py` excluded pending `honba.client` mirror) | `vyapaar-adapters` (connector packages) / `vyapaar-ffi` (wheel namespace) | open (filed, Stage 2) |
 
 Status values: `reserved` (numbering held, not yet filed) · `open` (mirror/stub
 is live in this repo; filing doc exists or lands with the referencing stage) ·

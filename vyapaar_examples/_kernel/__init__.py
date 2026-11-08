@@ -1,4 +1,4 @@
-"""Domain models for Honba (pure domain models, no I/O)."""
+"""Domain models for the vyapaar kernel (pure domain models, no I/O)."""
 
 from vyapaar_examples._kernel.bar import Bar
 from vyapaar_examples._kernel.instrument import Instrument, InstrumentId, InstrumentKind, OptionType
