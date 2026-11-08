@@ -18,6 +18,7 @@ Numbering is per-repo, sequential, never reused. Open an issue file
 | 0005 | `0005-vyapaar-exec-freeze-slicer-mirror` | freeze-limit auto-slicing only mirrored; wheel `Sizer` cannot slice | `vyapaar-exec` (freeze slicer crate) / `vyapaar-ffi` | reserved (Stage 5) |
 | 0006 | `0006-vyapaar-wheel-kernel-domain-surface` | kernel-domain engine surface (types, Strategy contract, manifests/wire, store, evaluator, native attributes, indicator registry, declarative/execution/sizing, portfolio_strategy) absent from the wheel → `_kernel/` mirror + `native.py` pins | `vyapaar-ffi` | open (filed, Stage 1; extended Stage 2) |
 | 0007 | `0007-vyapaar-adapters-framework-surface` | `honba.adapters` framework (contract/registry/capabilities/models/FakeAdapter/session/rate_limit/secrets) absent from the wheel → `_kernel/adapters/` mirror (13 files; `rest.py`+`gateway.py` excluded pending `honba.client` mirror) | `vyapaar-adapters` (connector packages) / `vyapaar-ffi` (wheel namespace) | open (filed, Stage 2) |
+| 0008 | `0008-runtime-session-surface` | No wheel session orchestrator for real-data runs (next-open fills, NSE costs, T+1 settlement) → `_kernel/session.py` protocol-only stub; `Vyapaar.backtest` raises `NotImplementedError` on purpose | `vyapaar-runtime` (Strategy Tester session) / `vyapaar-ffi` (wheel surface) | open (filed, Stage 3) |
 
 Status values: `reserved` (numbering held, not yet filed) · `open` (mirror/stub
 is live in this repo; filing doc exists or lands with the referencing stage) ·

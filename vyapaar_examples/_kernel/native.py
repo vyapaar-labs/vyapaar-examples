@@ -31,7 +31,14 @@ _CURRENCY_MINOR_UNITS: dict[str, tuple[int, str, str]] = {
 
 
 def native_attr(name: str) -> Any:
-    """Kernel extension attribute by name (version constants, currency table)."""
+    """Kernel extension attribute by name (version constants, currency table).
+
+    Raises ``RuntimeError`` (not ``AttributeError``) for unknown names so
+    callers probing the native surface (:func:`resolve_backend` probes in the
+    mirrored ``_kernel.backtest.simulated``, the runner's trading-state
+    fallback, ...) can treat a missing/stale extension the same way they treat
+    an ImportError and fall back to the pure-Python path.
+    """
     if name == "SCHEMA_VERSION":
         return SCHEMA_VERSION
     if name == "API_VERSION":
@@ -40,4 +47,4 @@ def native_attr(name: str) -> Any:
         return STRATEGY_API_VERSION
     if name == "currency_minor_units":
         return lambda: dict(_CURRENCY_MINOR_UNITS)
-    raise AttributeError(f"no mirrored kernel attribute: {name!r}")
+    raise RuntimeError(f"no mirrored kernel attribute: {name!r}")  # gap 0006: probe-reachable

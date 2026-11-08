@@ -1,7 +1,7 @@
 # `vyapaar-examples` — Inter-Agent Handoff
 
 ## Phase / Slice Status
-* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 3 of 9 stages done:
+* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 4 of 9 stages done:
   * **Stage 0 (pre-flight)** — commit `0be8298`, `feat/port-stage-0-preflight`.
   * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port`:
     harness modules, merge-homes, kernel mirror `_kernel/`, 34 test files. Milestone detail
@@ -13,13 +13,21 @@
     cleanly. Gates: `pytest` 424 passed / 94 skipped, `ruff check` + `ruff format --check`
     (334 files), `mypy vyapaar_examples` (202 files) — all green; stage filter passed
     (102 tests). Gaps 0006 extended + 0007 filed in the same change.
+  * **Stage 3 (tester & enhancer)**: `backtesting` 11/11 + `optimizer` 3/3 scripts, 14 test
+    files, 2 topic READMEs ported; `_kernel/` extended with `backtest/` (simulated fills,
+    costs, latency), `markets/`, `log.py`, `risk.py`, `runner.py`, `session.py` (protocol
+    stub, gap 0008); `optimizer/algo_analytics/` (walk-forward, Monte Carlo, DSR/PBO,
+    plateau) grafted into `vyapaar_examples/backtest.py`. `docs/reference/{dsr_pbo,
+    wfo_efficiency}.md` ported. Gates: `pytest` 509 passed / 110 skipped, `ruff check` +
+    `ruff format --check`, `mypy vyapaar_examples` (222 files) — all green; stage filter
+    (45 passed / 2 skipped). Two tests needing the real lakehouse catalog
+    (`test_08_sip_buy_and_hold.py`, `test_10_chained_screener_and_sip.py`, 16 cases) skip
+    cleanly via a `pytest.skip`-on-`FileNotFoundError` guard citing gap 0003. Gap 0008 filed.
   * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
     commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
     branches remain as markers and can be deleted (`git branch -d`).
-  * Remaining: Stage 3 (tester & enhancer: `backtesting` 11, `optimizer` 3) → Stage 8.
-    Stale earlier plan scratch (Tier 6D, Fincept/Quantcept Layer 6, port-plan availability)
-    are completed milestones recorded in git history; their slice detail lives in the
-    commits and `docs/plans/`.
+  * Remaining: Stage 4 (lakehouse consumers: `storage` 4, `universes` 10, `mutual_funds` 4)
+    → Stage 8.
 
 ## Decisions & Discoveries
 * **Two bar worlds coexist by design**: fresh pedagogy world is exact `Decimal`
@@ -69,14 +77,37 @@
 * Local environment: **the `vyapaar` wheel is absent**; PEP-668 system python;
   optuna is the only missing optional dep — D7 `pytest.importorskip` keeps CI green.
   Examples run standalone (`PYTHONPATH=.`) or via rootdir conftest.
+* **Real-catalog skip seam** (Stage 3, gap 0003): tests that need genuine lakehouse
+  behaviour (e.g. `test_10_chained_screener_and_sip.py`'s point-in-time fundamentals
+  sparsity checks) rather than synthetic `add_series` fixtures request a `_real_catalog`
+  fixture that calls `find_catalog_path()`/reads the real `ParquetBarStore` and
+  `pytest.skip`s with the gap citation on `FileNotFoundError`/empty read — mirrors the
+  established `test_pipeline_chain.py` probe-and-skip pattern, not a new idiom.
+* **`backtest.py` has two `Bar` names in scope** (Stage 3 bug, fixed): the grafted
+  engine family (`run_portfolio_backtest`) takes kernel `_kernel.bar.Bar`
+  (`Sequence[Bar]`), while the original `Backtest` class's `signal_fn`/`Trade` contract
+  needs the fresh Decimal `data.Bar` (imported as `FreshBar`) — a stray `list[Bar]` on
+  `Backtest.__init__` silently typo'd into the kernel type; watch for this when grafting
+  more engine functions into this file.
+* **`native_attr`-only dynamic modules need `# noqa: F822` on `__all__`, not a
+  TYPE_CHECKING import**: `risk.py`/`manifest.py`/`money.py` expose Rust-native names
+  (`RiskLimits`, `TradingState`, ...) only via module `__getattr__`; listing them in
+  `__all__` needs `# noqa: F822 - lazy, see __getattr__` per name, and a TYPE_CHECKING
+  self-import of the same module is always wrong (ruff/mypy both reject it).
+* **`_kernel/session.py`'s `Vyapaar` class (gap 0008, Stage 3)** is a custom
+  (non-verbatim) protocol-only stub for the absent `vyapaar-runtime` session
+  orchestrator: `DataProvider`/`CostModel`/`BacktestResult` Protocols type the
+  `algo_analytics` engines' real-data path, and `Vyapaar.backtest(...)` raises
+  `NotImplementedError` on purpose (D7) — it was mis-ported once as `class Honba`
+  (D4 rename missed), breaking the three consumers that already said `Vyapaar`.
 
 ## Immediate Next Step
-* **Stage 3 (tester & enhancer)**: port `backtesting` 11 + `optimizer` 3 topics with
-  their tests; `optimizer` scripts need the Stage-1 mirror `optimizer/`/`quant.py`
-  (gap 0001) and `hypothesis` (already a dev dep). Stage 3 exercises
-  `_kernel.testing.replay` reporting + walker/WSR/DSR mirror paths; check whether
-  `honba.backtesting` scripts import anything beyond the existing `_kernel` groups
-  before extending the mirror map.
+* **Stage 4 (lakehouse consumers)**: port `storage` 4, `universes` 10, `mutual_funds` 4
+  topics with their tests via `vyapaar_data` (`parquet_catalog`, `duckdb_store`,
+  `service`, `providers/bhavcopy`, `domain/*`); in-repo `amfi.py` fills the NAV-loader
+  hole (gap 0003). `universe_lists.py` (already ported, Stage 1) backs
+  `universes/01..09` + `alpha30_constituents.py`; `ewr/` (already ported) backs the
+  rebalance-scheduling scripts. scipy is already an optional dep (D7).
 
 ## Operating Invariants
 * Zero floats in financial math (documented exceptions: BS internals example 13; grafted
