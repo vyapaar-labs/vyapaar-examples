@@ -19,7 +19,8 @@ on a seeded mid path; no ``Strategy`` subclass.
 Run::
 
     python examples/stocksharp/04_market_maker.py --steps 240 --seed 42 --gamma 0.1 --k 1.5
-    python examples/stocksharp/04_market_maker.py --inventory-limit 200 --obi-limit 0.6 --out mm.json
+    python examples/stocksharp/04_market_maker.py \
+        --inventory-limit 200 --obi-limit 0.6 --out mm.json
 
 Pitfalls::
 

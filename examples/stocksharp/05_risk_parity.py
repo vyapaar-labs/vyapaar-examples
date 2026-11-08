@@ -18,8 +18,10 @@ shares via the framework; lot size and freeze limits are not applied here
 
 Run::
 
-    python examples/stocksharp/05_risk_parity.py --symbols 10 --bars 260 --rebalance-days 20 --seed 42
-    python examples/stocksharp/05_risk_parity.py --symbols 10 --bars 260 --rebalance-days 10 --out risk_parity.json
+    python examples/stocksharp/05_risk_parity.py \
+        --symbols 10 --bars 260 --rebalance-days 20 --seed 42
+    python examples/stocksharp/05_risk_parity.py \
+        --symbols 10 --bars 260 --rebalance-days 10 --out risk_parity.json
 
 Pitfalls::
 

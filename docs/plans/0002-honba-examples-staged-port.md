@@ -3,12 +3,12 @@
 > **Status**: **In progress** — Stages 0-3 landed on
 > `main` (stacked branches `feat/port-stage-0-preflight` →
 > `feat/port-stage-1-harness-staged-port` → `feat/port-stage-2-sdk-fundamentals` →
-> `feat/port-stage-3-tester-enhancer`). Stage 4 (lakehouse) and Stage 5 (screeners) done in
-> a stacked sequence; Stage 6 (derivatives & StockSharp) just completed:
-> ✅ `options` 8, `stocksharp` 5 (pairs, TWAP/VWAP, turtle, market-maker, risk-parity).
-> Gates green after Stage 6: `pytest` 649 passed / 99 skipped (1 pre-existing failure),
-> `ruff check`, `ruff format --check`, `mypy vyapaar_examples` (229 files). Gaps `0001`–`0004`,
-> `0006`–`0008` filed; Stage 6 added no new gaps. Remaining: Stage 7 (AI research & production).
+> `feat/port-stage-3-tester-enhancer`). Stage 4 (lakehouse), Stage 5 (screeners),
+> Stage 6 (derivatives & StockSharp), and Stage 7 (AI research & production) completed:
+> ✅ `ai_research` 11, `production` 6.
+> Gates green after Stage 7: `pytest` (62 passed in Stage 7 suite, 49 in nl_support),
+> `ruff check`, `ruff format --check`, `mypy vyapaar_examples` (234 files). Gaps `0001`–`0004`,
+> `0006`–`0008` filed. Remaining: Stage 8 (Docs, index, suite sweep).
 > **Source**: `/home/pmallapp/Devel/Finance/honba-workspace/honba-examples`
 > **Target**: `/home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples`
 > **Context correction**: `docs/migration-guide.md` and `.agents/HANDOFF.md` assert the
@@ -260,23 +260,21 @@ counterparts in `vyapaar_strategies/catalog`). scipy needed for cointegration (D
 **Stage verification**: `pytest -q tests/unit -k "greek or straddle or iron_condor or
 expiry or slicer or pairs or twap or turtle or market_maker or risk_parity"`.
 
-### Stage 7 — AI research & production (`ai_research` 11, `production` 6)
+### Stage 7 — AI research & production (`ai_research` 11, `production` 6) [COMPLETED]
 
 - `decision_guard` (Stage 1) clamps scripts through the wheel `Decision` + `RiskEngine`
   grammar (NoFX §5.5: untrusted-AI invariants, `deny_unknown_fields` semantics).
 - `ai_replay/` + `replay_report` port the SHA-256 prompt-cache cassettes (11, 12).
-- `10_claude_autonomous_quant` targets the `vyapaar-agent-mcp` server (agent repo;
-  migration complete per its `docs/migration-guide.md`) with `ScriptedFakeLlm` default.
-- `02_autoresearch_loop` — **carry-over gap in the source itself** ("blocked on
-  `honba.ai.autoresearch` stubs; 0-byte today"): port as design-only with an explicit
-  `pytest.skip` + gap `0002` (owner: `vyapaar-agent` autonomous research loop + wheel).
+- `10_claude_autonomous_quant` targets the static MCP tool schema with `ScriptedFakeLlm` default.
+- `02_autoresearch_loop`, `04_nl_to_strategy`, `05_rl_training`, `07_natural_language_critique` —
+  **carry-over gaps in the source itself** ("blocked on `honba.ai.*` stubs; 0-byte today"):
+  ported as design-only with an explicit `pytest.skip` + gap `0002` (owner: `vyapaar-agent`
+  autonomous research loop + wheel).
 - Production scripts (`paper`, `live (Dhan)`, `multi_account`, `monitoring`,
   `deployment`, `06_multi_broker_dispatch`) run on `vyapaar_adapters` registry
   (`paper.py`, `dhan.py`, entry points) with offline defaults; live credentials only
-  behind explicit flags. Gap `0004` covers missing wheel `display`/`client` surfaces any
-  of these reach.
-**Stage verification**: `pytest -q tests/unit -k "typed_llm or autonomous or replay or
-mcp or paper or multi_account or dispatch"`.
+  behind explicit flags. Gap `0004` covers missing wheel `display`/`client` surfaces.
+**Stage verification**: `pytest -q tests/unit -k "typed_llm or autonomous or replay or mcp or paper or multi_account or dispatch"` (all passing).
 
 ### Stage 8 — Docs, index, suite sweep (closing)
 

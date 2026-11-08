@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
+from decimal import Decimal
 from typing import Any
 
 # The kernel evaluator's Sma/Rsi come from the undergraduate indicator tree in the
@@ -28,7 +29,8 @@ class Sma:
         self._sma = SMA(period)
 
     def update(self, x: float) -> float | None:
-        self._sma.update(x)  # type: ignore[arg-type]
+        d = Decimal(str(x)) if not isinstance(x, Decimal) else x
+        self._sma.update(d)
         if self._sma.ready:
             return float(self._sma.value)
         return None
@@ -47,7 +49,8 @@ class Rsi:
         self._rsi = RSI(period)
 
     def update(self, x: float) -> float | None:
-        self._rsi.update(x)  # type: ignore[arg-type]
+        d = Decimal(str(x)) if not isinstance(x, Decimal) else x
+        self._rsi.update(d)
         if self._rsi.ready:
             return float(self._rsi.value)
         return None
