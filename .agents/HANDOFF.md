@@ -36,10 +36,18 @@
     `mypy vyapaar_examples` (223 files) — all green; stage filter
     (`parquet or bhavcopy or amfi or nav or universe or alpha30`) 86 passed /
     3 skipped.
+  * **Stage 5 (screeners) — in progress**: `screening` 1/8 landed (`01_multibagger_screener`
+    + its dedicated test). Also fixed a latent bug surfaced by un-skipping
+    `tests/unit/test_screening_cli.py` (ported Stage 1, dormant while
+    `examples/screening/` didn't exist): 3 of its tests called
+    `resolve_catalog_dir()`/`run()` with no real NSE catalog on disk and failed outright
+    instead of skipping; reworked them to request a `_real_catalog` fixture mirroring
+    `test_10_chained_screener_and_sip.py`'s pattern, citing gap 0003. Remaining:
+    `02`-`08` + `chains/` TOMLs + topic README + `docs/multibagger_screening_research.md`.
   * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
     commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
     branches remain as markers and can be deleted (`git branch -d`).
-  * Remaining: Stage 5 (screeners: `screening` 8) → Stage 8.
+  * Remaining: finish Stage 5 (screeners) → Stage 8.
 
 ## Decisions & Discoveries
 * **Two bar worlds coexist by design**: fresh pedagogy world is exact `Decimal`

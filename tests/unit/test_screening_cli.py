@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from vyapaar_examples.screener_cli import ScreenerCLIExample
+from vyapaar_examples.screening.paths import find_catalog_path
 
 _ROOT = Path(__file__).resolve().parents[2] / "examples"
 
@@ -61,6 +62,20 @@ def net_net_script():
 @pytest.fixture(scope="module")
 def mf_script():
     return _load("screening_06_mutual_fund", "screening/07_mutual_fund_screener.py")
+
+
+@pytest.fixture
+def _real_catalog() -> Path:
+    """The real 1D NSE catalog, or skip (docs/gaps/0003-vyapaar-data-nav-loaders.md).
+
+    These tests exercise the real catalog-resolution path rather than a synthetic
+    fixture, so they need the actual ``vyapaar-data`` catalog checkout, absent in
+    this workspace.
+    """
+    try:
+        return find_catalog_path()
+    except FileNotFoundError as exc:
+        pytest.skip(f"1D NSE catalog not available (gap 0003-vyapaar-data-nav-loaders): {exc}")
 
 
 _CANDIDATES = [
@@ -124,27 +139,28 @@ def test_csv_stream(multibagger_script, capsys):
     assert lines[2].startswith("BBB,")
 
 
-def test_diagnostics_go_to_stderr(multibagger_script, monkeypatch, capsys):
+def test_diagnostics_go_to_stderr(multibagger_script, monkeypatch, capsys, _real_catalog):
     example = multibagger_script.MultibaggerScreenerExample()
     example.stream_format = "symbols"
     monkeypatch.setattr(example, "asof_str", "2099-01-01")
-    asof = example.resolve_asof(example.resolve_catalog_dir())
+    asof = example.resolve_asof(_real_catalog)
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "beyond the latest catalog date" in captured.err
     assert asof <= dt.date(2100, 1, 1)
 
 
-def test_invalid_asof_raises_systemexit(multibagger_script):
+def test_invalid_asof_raises_systemexit(multibagger_script, _real_catalog):
     example = multibagger_script.MultibaggerScreenerExample()
     example.asof_str = "not-a-date"
     with pytest.raises(SystemExit):
-        example.resolve_asof(example.resolve_catalog_dir())
+        example.resolve_asof(_real_catalog)
 
 
-def test_no_candidates_emits_empty_stream(multibagger_script, monkeypatch, capsys):
+def test_no_candidates_emits_empty_stream(multibagger_script, monkeypatch, capsys, _real_catalog):
     example = multibagger_script.MultibaggerScreenerExample()
     example.stream_format = "symbols"
+    monkeypatch.setattr(example, "resolve_catalog_dir", lambda: _real_catalog)
     monkeypatch.setattr(example, "screen", lambda catalog_dir, asof: [])
     code = example.run()
     captured = capsys.readouterr()
