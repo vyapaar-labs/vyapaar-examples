@@ -102,10 +102,12 @@
   (D4 rename missed), breaking the three consumers that already said `Vyapaar`.
 
 ## Immediate Next Step
-* **Stage 4 (lakehouse consumers)**: port `storage` 4, `universes` 10, `mutual_funds` 4
-  topics with their tests via `vyapaar_data` (`parquet_catalog`, `duckdb_store`,
-  `service`, `providers/bhavcopy`, `domain/*`); in-repo `amfi.py` fills the NAV-loader
-  hole (gap 0003). `universe_lists.py` (already ported, Stage 1) backs
+* **Stage 4 (lakehouse consumers)**: `storage` 4/4 and `mutual_funds` 4/4 scripts ported
+  with tests and topic READMEs. `storage/02`'s ingest edge added
+  `vyapaar_examples/bhavcopy.py` (bhavcopy dialect-sniffing parser, citing gap 0003)
+  alongside the already-ported `amfi.py` NAV parser. `mutual_funds` builds on `amfi.py`
+  as-is (04's numpy/scipy imports moved lazily into `run()` per D7). Only `universes` 10
+  remains for Stage 4. `universe_lists.py` (already ported, Stage 1) backs
   `universes/01..09` + `alpha30_constituents.py`; `ewr/` (already ported) backs the
   rebalance-scheduling scripts. scipy is already an optional dep (D7).
 

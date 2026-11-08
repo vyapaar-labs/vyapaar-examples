@@ -20,6 +20,8 @@ screener/sip harness resolve are absent, so the ported consumers keep in-repo sh
   `vyapaar-data` checkout exists beside the repo.
 * Coverage/interval handling rides the `_kernel.coverage` mirror (gap 0006) until the
   data owning surface exists.
+* `vyapaar_examples/bhavcopy.py` — NSE bhavcopy dialect-sniffing CSV parser (UDiFF/Sec-Bhavdata/
+  legacy), used by `storage/02_import_nse_bhavcopy.py`.
 
 ## How to close
 Land `vyapaar-data` with the loaders/store/coverage surface (point-in-time NSE parquet
