@@ -1,0 +1,80 @@
+"""06_alpha30_equal_weight_demo: runnable equal-weight rebalance of Alpha 30.
+
+The strategy class is ``Alpha30EqualWeightRebalance``: an Alpha-30 specialization of
+``UniverseEqualWeightRebalance`` (from 04_alpha30_generic_rebalancer.py), rebalanced
+every 15 trading days. Membership is resolved through the Vyapaar universe API and
+re-fetched on every rebalance (as of the bar date) so index joiners / leavers are applied
+when a real history is registered:
+
+    from vyapaar_examples.universe_lists import resolve_universe
+    ids = resolve_universe("nifty200_alpha_30", exchange="NSE", as_of=bar_date)
+
+The ``__main__`` block resolves membership as a smoke test, so the example runs
+offline and deterministically against the bundled universe map.
+
+Run::
+
+    python examples/universes/06_alpha30_equal_weight_demo.py
+
+Pitfalls::
+
+    - Point-in-time but not real history: 04 resolves membership with as_of=<bar day>, yet the
+      shipped Alpha 30 history is today's 30 names stamped from 2005-04-01, so no one joins or
+      leaves in a backtest. Today's members were also picked for past alpha (see 03).
+    - Inherits 04's remaining traps: the initial rebalance can size off partial data, prices up to
+      max_price_age_days old are used, and the day counter is driven by any instrument's bars.
+    - Not a backtest: __main__ prints how many names resolve and nothing more, so run 07 for a
+      Vyapaar-native result. Do not read a performance story into the class from this file.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+
+from vyapaar_examples._kernel.instrument import InstrumentId
+from vyapaar_examples.universe_lists import resolve_universe
+
+_path_04 = Path(__file__).resolve().parent / "04_alpha30_generic_rebalancer.py"
+_spec = importlib.util.spec_from_file_location("ex04_generic", _path_04)
+assert _spec is not None and _spec.loader is not None
+_mod_04 = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod_04)
+UniverseEqualWeightRebalance = _mod_04.UniverseEqualWeightRebalance
+
+
+class Alpha30EqualWeightRebalance(UniverseEqualWeightRebalance):
+    """Equal-weight Nifty200 Alpha 30 portfolio strategy rebalanced every 15 trading days."""
+
+    name = "alpha30_equal_weight_rebalance"
+    UNIVERSE = "nifty200_alpha_30"
+
+    def __init__(
+        self,
+        capital: float = 1_000_000.0,
+        allocation: float = 0.98,
+        rebalance_days: int = 15,
+        exchange: str = "NSE",
+        universe: str = UNIVERSE,
+    ) -> None:
+        super().__init__(
+            capital=capital,
+            allocation=allocation,
+            rebalance_days=rebalance_days,
+            exchange=exchange,
+            universe=universe,
+        )
+
+
+def main() -> None:
+    # Smoke: resolve via engine API (falls back if Alpha 30 is still learning)
+    try:
+        members: list[InstrumentId] = resolve_universe("nifty200_alpha_30")
+        print(f"nifty200_alpha_30 → {len(members)} names")
+    except ValueError as e:
+        print(f"universe not ready: {e}")
+    print("Strategy uses resolve_universe() only — no hardcoded constituents.")
+
+
+if __name__ == "__main__":
+    main()
