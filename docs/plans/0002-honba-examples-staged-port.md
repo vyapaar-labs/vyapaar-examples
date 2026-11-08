@@ -2,7 +2,7 @@
 
 > **Status**: **In progress** — Stage 0 (pre-flight), Stage 1 (shared harness),
 > Stage 2 (SDK fundamentals: `basic` 5, `candles` 4, `strategies` 16), Stage 3
-> (tester & enhancer: `backtesting` 11, `optimizer` 3), Stage 4 (lakehouse consumers:
+> ✅ DONE (tester & enhancer: `backtesting` 11, `optimizer` 3 + engine mirrors + graft), Stage 4 (lakehouse consumers:
 > `storage` 4, `universes` 10, `mutual_funds` 4) and Stage 5 (screeners: `screening` 8,
 > `chains/` 3 TOMLs) are done; Stages 0-2 landed on
 > `main` (stacked branches `feat/port-stage-0-preflight` →
