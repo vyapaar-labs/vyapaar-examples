@@ -3,17 +3,19 @@
 ## Phase / Slice Status
 * **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 3 of 9 stages done:
   * **Stage 0 (pre-flight)** — commit `0be8298`, `feat/port-stage-0-preflight`.
-  * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port` (stacked, unmerged):
+  * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port`:
     harness modules, merge-homes, kernel mirror `_kernel/`, 34 test files. Milestone detail
     lives in the branch/commits; gaps `0001`–`0004` + `0006` filed.
-  * **Stage 2 (SDK fundamentals)** — `feat/port-stage-2-sdk-fundamentals` (stacked on
-    Stage 1, unmerged): `basic` 5 + `candles` 4 + `strategies` 16 scripts, 22 test files,
+  * **Stage 2 (SDK fundamentals)** — `feat/port-stage-2-sdk-fundamentals`: `basic` 5 + `candles` 4 + `strategies` 16 scripts, 22 test files,
     3 topic READMEs ported; `_kernel/` extended with `adapters/` (13 files, gap 0007),
     `indicators/` (87 files), `declarative.py`, `execution.py`, `sizing.py`,
     `portfolio_strategy/` (10 files) — 128 new mirror files, all 138 ported modules import
     cleanly. Gates: `pytest` 424 passed / 94 skipped, `ruff check` + `ruff format --check`
     (334 files), `mypy vyapaar_examples` (202 files) — all green; stage filter passed
     (102 tests). Gaps 0006 extended + 0007 filed in the same change.
+  * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
+    commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
+    branches remain as markers and can be deleted (`git branch -d`).
   * Remaining: Stage 3 (tester & enhancer: `backtesting` 11, `optimizer` 3) → Stage 8.
     Stale earlier plan scratch (Tier 6D, Fincept/Quantcept Layer 6, port-plan availability)
     are completed milestones recorded in git history; their slice detail lives in the
@@ -69,11 +71,7 @@
   Examples run standalone (`PYTHONPATH=.`) or via rootdir conftest.
 
 ## Immediate Next Step
-* **Commit Stage 2** on `feat/port-stage-2-sdk-fundamentals`
-  (`feat(examples): port stage 2 (SDK fundamentals: basic, candles, strategies)`,
-  citing gaps 0004/0006/0007); verify `git add` excludes the concurrent session's
-  `examples/09_alpha30_factor_model.py` + `tests/unit/test_09_alpha30_factor_model.py`.
-* Then **Stage 3 (tester & enhancer)**: port `backtesting` 11 + `optimizer` 3 topics with
+* **Stage 3 (tester & enhancer)**: port `backtesting` 11 + `optimizer` 3 topics with
   their tests; `optimizer` scripts need the Stage-1 mirror `optimizer/`/`quant.py`
   (gap 0001) and `hypothesis` (already a dev dep). Stage 3 exercises
   `_kernel.testing.replay` reporting + walker/WSR/DSR mirror paths; check whether
