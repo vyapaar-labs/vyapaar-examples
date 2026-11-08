@@ -48,7 +48,6 @@ from typing import Any
 
 from vyapaar_examples._kernel.greeks import bs_greeks, bs_price
 from vyapaar_examples._kernel.option import OptionKind
-
 from vyapaar_examples.cli import add_out_arg, emit_json, make_parser
 from vyapaar_examples.options import (
     GreekRiskBounds,
