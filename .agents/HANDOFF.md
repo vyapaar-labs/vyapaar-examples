@@ -1,7 +1,7 @@
 # `vyapaar-examples` — Inter-Agent Handoff
 
 ## Phase / Slice Status
-* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 4 of 9 stages done:
+* **Honba staged port (`docs/plans/0002-honba-examples-staged-port.md`)** — 5 of 9 stages done:
   * **Stage 0 (pre-flight)** — commit `0be8298`, `feat/port-stage-0-preflight`.
   * **Stage 1 (shared harness)** — `feat/port-stage-1-harness-staged-port`:
     harness modules, merge-homes, kernel mirror `_kernel/`, 34 test files. Milestone detail
@@ -23,11 +23,23 @@
     (45 passed / 2 skipped). Two tests needing the real lakehouse catalog
     (`test_08_sip_buy_and_hold.py`, `test_10_chained_screener_and_sip.py`, 16 cases) skip
     cleanly via a `pytest.skip`-on-`FileNotFoundError` guard citing gap 0003. Gap 0008 filed.
+  * **Stage 4 (lakehouse consumers)**: `storage` 4/4 (`01_parquet_catalog`,
+    `02_import_nse_bhavcopy` + new `bhavcopy.py` dialect-sniffing parser,
+    `03_import_amfi_nav`, `04_export_tearsheet`), `mutual_funds` 4/4
+    (`01_fetch_nav`…`04_portfolio_optimization`) and `universes` 10/10
+    (`01_nifty50_constituents`…`09_alpha30_cross_sectional` + shared
+    `alpha30_constituents.py`) ported with tests and topic READMEs across
+    commits `5019a91` (storage, mutual_funds) and `f2576c8` (universes); the
+    three previously-gated `test_universe_lists.py` cases are activated now
+    that the scripts exist. Gap `0003` extended (adds `bhavcopy.py`). Gates:
+    `pytest` 583 passed / 108 skipped, `ruff check` + `ruff format --check`,
+    `mypy vyapaar_examples` (223 files) — all green; stage filter
+    (`parquet or bhavcopy or amfi or nav or universe or alpha30`) 86 passed /
+    3 skipped.
   * **Landed on `main`**: Stages 0–2 fast-forwarded `552c873 → 511da5a` (linear, no merge
     commit; `origin/main` unpushed at the time of merge). The three `feat/port-stage-*`
     branches remain as markers and can be deleted (`git branch -d`).
-  * Remaining: Stage 4 (lakehouse consumers: `storage` 4, `universes` 10, `mutual_funds` 4)
-    → Stage 8.
+  * Remaining: Stage 5 (screeners: `screening` 8) → Stage 8.
 
 ## Decisions & Discoveries
 * **Two bar worlds coexist by design**: fresh pedagogy world is exact `Decimal`
@@ -64,9 +76,9 @@
   `tests/unit/conftest.py` supplies `catalog_dir`/`add_series`/`fund_db`/`data_env`
   fixtures; golden `output_report.txt` needs `VYAAPAAR_BLESS=1` to re-bless.
 * **Deferred-topic tests skip** until their scripts land: `test_screening_cli` (Stage 5),
-  `test_nl_support` + `decision_guard` 09 (ai_research topic), `test_universe_lists`
-  script tests (Stage 4). `02_autoresearch_loop` stays design-only pending
-  `vyapaar-agent` (gap 0002). Stage-2 topics have no skips (fake-adapter offline).
+  `test_nl_support` + `decision_guard` 09 (ai_research topic). `02_autoresearch_loop`
+  stays design-only pending `vyapaar-agent` (gap 0002). Stage-2 topics have no skips
+  (fake-adapter offline).
 * Digit-named example modules load via `importlib.util.spec_from_file_location`.
 * Zero floats start at the source: fresh synthetic walks step in integer paise and
   materialize `Decimal`; ruff RUF032 forbids `Decimal(<float literal>)`; RUF002 keeps

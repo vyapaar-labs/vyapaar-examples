@@ -1,14 +1,15 @@
 # 0002 — Staged Port: `honba-examples` → `vyapaar-examples`
 
 > **Status**: **In progress** — Stage 0 (pre-flight), Stage 1 (shared harness),
-> Stage 2 (SDK fundamentals: `basic` 5, `candles` 4, `strategies` 16) and Stage 3
-> (tester & enhancer: `backtesting` 11, `optimizer` 3) are done; Stages 0-2 landed on
+> Stage 2 (SDK fundamentals: `basic` 5, `candles` 4, `strategies` 16), Stage 3
+> (tester & enhancer: `backtesting` 11, `optimizer` 3) and Stage 4 (lakehouse consumers:
+> `storage` 4, `universes` 10, `mutual_funds` 4) are done; Stages 0-2 landed on
 > `main` (stacked branches `feat/port-stage-0-preflight` →
 > `feat/port-stage-1-harness-staged-port` → `feat/port-stage-2-sdk-fundamentals`).
-> Gates green after Stage 3: `pytest` 509 passed / 110 skipped, `ruff check`,
-> `ruff format --check`, `mypy vyapaar_examples` (222 files), stage filter 45 passed /
-> 2 skipped. Gaps `0001`–`0004`, `0006`–`0008` filed (`0005` reserved for Stage 5).
-> Remaining: Stage 4 (lakehouse consumers) onward.
+> Gates green after Stage 4: `pytest` 583 passed / 108 skipped, `ruff check`,
+> `ruff format --check`, `mypy vyapaar_examples` (223 files), stage filter 86 passed /
+> 3 skipped. Gaps `0001`–`0004`, `0006`–`0008` filed (`0005` reserved for Stage 5).
+> Remaining: Stage 5 (screeners) onward.
 > **Source**: `/home/pmallapp/Devel/Finance/honba-workspace/honba-examples`
 > **Target**: `/home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples`
 > **Context correction**: `docs/migration-guide.md` and `.agents/HANDOFF.md` assert the
