@@ -33,3 +33,10 @@
   ```bash
   pytest -q
   ```
+
+---
+
+## 4. Plan & Gap Discipline (binding)
+* Binds to `.agents/rules/gap-tracking.md`:
+  - If any hardcoded/stubbed/sample data is used when implementing a plan or gap, add a `docs/{plans,gaps}/XXXX-*.md` style document in the respective repo which is supposed to provide the functionality (gaps are individual features; plans are collections of gaps).
+  - Cite dependencies in code and commits; when implemented, cleanup `docs/{plans,gaps}` of already implemented ones and update any index that references it.
