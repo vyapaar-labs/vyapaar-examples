@@ -28,6 +28,7 @@
 
 ## Immediate Next Step
 * All 9 stages of the `honba-examples` port are complete and fully verified.
+* `docs/migration-guide.md` decimated: migration steps moved to `docs/design/code-migration-map.md`; verification commands moved to `docs/roadmap/migration-verification.md`; original `migration-guide.md` removed.
 * Commit Stage 8 to git and create PR / merge branch.
 
 ## Operating Invariants
