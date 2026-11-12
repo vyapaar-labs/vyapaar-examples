@@ -3,7 +3,7 @@
 Verification commands for the `honba-examples → vyapaar-examples` migration:
 
 ```bash
-cd /home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples
+# Run from the repository root
 pytest -q
 ruff check .
 ruff format --check .

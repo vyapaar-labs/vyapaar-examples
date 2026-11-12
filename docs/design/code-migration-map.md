@@ -1,8 +1,8 @@
 # `vyapaar-examples` — Migration & DDD Refactoring Guide
 
 > **Tier**: Tier 6D
-> **Source**: `/home/pmallapp/Devel/Finance/honba-workspace/honba-examples`
-> **Target**: `/home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples`
+> **Source**: `honba-workspace/honba-examples`
+> **Target**: `vyapaar-examples`
 > **Status**: Migration complete (staged port, all 9 stages 0–8).
 
 ## Migration Status
@@ -19,7 +19,7 @@ The staged port (`docs/plans/0002-honba-examples-staged-port.md`, Stages 0–8) 
 ## Executed Verification Pipeline
 
 ```bash
-cd /home/pmallapp/Devel/Finance/vyapaar-labs/vyapaar-examples
+# Run from the repository root
 pytest -q
 ruff check .
 ruff format --check .
